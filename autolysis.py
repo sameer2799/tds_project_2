@@ -274,6 +274,11 @@ def main(dataset_path):
     # print(dataset_file)
     # print(filename)
 
+    
+    with open(dataset_path, 'rb') as f:
+        result = chardet.detect(f.read())
+        encoding = result['encoding']
+
     print("Running the main function...")
 
     metadata_prompt = (
@@ -284,9 +289,9 @@ def main(dataset_path):
             "The data may or may not be clean. Possible types are: 'integer', 'float', 'object', 'boolean', 'date' and 'url'."
         )
         
-    with open(dataset_path, "r") as f:
+    with open(dataset_path, "r", encoding=encoding) as f:
         sample_data = ''.join([f.readline() for i in range(5)])
-        
+    
     # Sending request to LLM
     res = request_to_llm_for_metadata(system_prompt = metadata_prompt, sample_data = sample_data)
     # Response from LLM received    
@@ -306,12 +311,9 @@ def main(dataset_path):
     )
 
     analysis_response = LLM_analysis(analysis_prompt, json.dumps(metadata))
+    print(analysis_response)
 
 
-
-    with open(dataset_path, 'rb') as f:
-        result = chardet.detect(f.read())
-        encoding = result['encoding']
 
     results = []
         
@@ -381,7 +383,7 @@ def main(dataset_path):
     )
 
     README_response = generate_README(README_prompt, json.dumps(metadata), final_images)
-
+    print(README_response)
     generated_file = README_response['choices'][0]['message']['content']
     # Save the generated image to a file
     with open(destination_dir+"/README.md", "w") as f:
