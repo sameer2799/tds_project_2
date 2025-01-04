@@ -288,17 +288,20 @@ def main(dataset_path):
             "Be robust, figure out the type by majority vote, cross-check by name of column, ignore empty cells."
             "The data may or may not be clean. Possible types are: 'integer', 'float', 'object', 'boolean', 'date' and 'url'."
         )
-        
-    with open(dataset_path, "r", encoding=encoding) as f:
-        sample_data = ''.join([f.readline() for i in range(5)])
-    
+    try:    
+        with open(dataset_path, "r", encoding=encoding) as f:
+            sample_data = ''.join([f.readline() for i in range(5)])
+    except:
+        print("Error in reading data file. Please check the file.")
+        return
     # Sending request to LLM
     res = request_to_llm_for_metadata(system_prompt = metadata_prompt, sample_data = sample_data)
     # Response from LLM received    
     
-    print(res)
+    # print(res)
     
     metadata = json.loads(res['choices'][0]['message']['function_call']['arguments'])['columns']
+    print("Metadata received...")
 
     analysis_prompt = (
         "You are given a metadata containing column names and their types. You are expert data analyst."
@@ -311,29 +314,48 @@ def main(dataset_path):
     )
 
     analysis_response = LLM_analysis(analysis_prompt, json.dumps(metadata))
-    print(analysis_response)
-
-
+    print("Analysis response received...")    
 
     results = []
         
     df = pd.read_csv(dataset_path, encoding=encoding)
 
-    try:
-        exec(analysis_response['choices'][0]['message']['content'])
-        flag=1
-    except:
-        corrected_response = correct_error_LLM_request(analysis_prompt, analysis_response['choices'][0]['message']['content'])
-        flag=0
+    print("Executing code...")
+    def execute_code(times=3):
+        time = 0
+        while time < times:
+            
+            try:
+                exec(analysis_response['choices'][0]['message']['content'])
+                print("Original Ran...")
+                break
+            except:
+                corrected_code = correct_error_LLM_request(analysis_prompt, analysis_response['choices'][0]['message']['content'])
+                try:
+                    exec(corrected_code)
+                    print("Running corrected response..")
+                    break
+                except:
+                    time += 1
+                    print("Retrying...")
+
+    execute_code()
+    print("Code executed or Failed ??")
+    # try:
+    #     exec(analysis_response['choices'][0]['message']['content'])
+    #     flag=1
+    # except:
+    #     corrected_response = correct_error_LLM_request(analysis_prompt, analysis_response['choices'][0]['message']['content'])
+    #     flag=0
         
-    if flag:
-        print("Original Ran...")
-    else:
-        print("Running corrected response..")
-        exec(corrected_response)
+    # if flag:
+    #     print("Original Ran...")
+    # else:
+    #     print("Running corrected response..")
+    #     exec(corrected_response)
 
 
-
+    print(os.listdir(os.curdir))
 
     # Source directory
     source_dir = "."
@@ -354,24 +376,25 @@ def main(dataset_path):
         destination_path = os.path.join(destination_dir, file)
         shutil.move(file_path, destination_path)
 
-    print(os.curdir)
+    # print(os.curdir)
 
     files = os.listdir(destination_dir)
-
-
+    print("Image files are being moved...")
+    
     # Filter the list to only include PNG files
     png_files = [file for file in files if file.endswith(".png")]
+    
     final_images = []
     # Read each PNG file
     for file in png_files:
         # Read the image file as binary data
-        with open(file, 'rb') as image_file:
+        with open(destination_dir+"/"+file, 'rb') as image_file:
             image_data = image_file.read()
 
         # Encode the image data to base64
         base64_image = base64.b64encode(image_data).decode('utf-8')
         final_images.append(base64_image)
-
+    print("Image files moved...")
     README_prompt = ("You are an expert data analyst. You are a given the columns and the column types of a csv dataset."
         "You are also given some images of analysis already done by me."
         "Describe in detail: "
@@ -383,7 +406,7 @@ def main(dataset_path):
     )
 
     README_response = generate_README(README_prompt, json.dumps(metadata), final_images)
-    print(README_response)
+    print("README response received...")
     generated_file = README_response['choices'][0]['message']['content']
     # Save the generated image to a file
     with open(destination_dir+"/README.md", "w") as f:

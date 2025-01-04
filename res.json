@@ -1,0 +1,27 @@
+{
+  "columns": [
+    { "column_name": "book_id", "column_type": "integer" },
+    { "column_name": "goodreads_book_id", "column_type": "integer" },
+    { "column_name": "best_book_id", "column_type": "integer" },
+    { "column_name": "work_id", "column_type": "integer" },
+    { "column_name": "books_count", "column_type": "integer" },
+    { "column_name": "isbn", "column_type": "object" },
+    { "column_name": "isbn13", "column_type": "object" },
+    { "column_name": "authors", "column_type": "object" },
+    { "column_name": "original_publication_year", "column_type": "integer" },
+    { "column_name": "original_title", "column_type": "object" },
+    { "column_name": "title", "column_type": "object" },
+    { "column_name": "language_code", "column_type": "object" },
+    { "column_name": "average_rating", "column_type": "float" },
+    { "column_name": "ratings_count", "column_type": "integer" },
+    { "column_name": "work_ratings_count", "column_type": "integer" },
+    { "column_name": "work_text_reviews_count", "column_type": "integer" },
+    { "column_name": "ratings_1", "column_type": "integer" },
+    { "column_name": "ratings_2", "column_type": "integer" },
+    { "column_name": "ratings_3", "column_type": "integer" },
+    { "column_name": "ratings_4", "column_type": "integer" },
+    { "column_name": "ratings_5", "column_type": "integer" },
+    { "column_name": "image_url", "column_type": "object" },
+    { "column_name": "small_image_url", "column_type": "object" }
+  ]
+}
